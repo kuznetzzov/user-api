@@ -1,28 +1,45 @@
 package com.flybuilder.userapi.controllers;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.flybuilder.userapi.model.dto.request.UserInfoRequest;
+import com.flybuilder.userapi.model.dto.response.UserInfoResponse;
+import com.flybuilder.userapi.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    @PostMapping("/hello")
-    public String sayHello(){
-        return "Hello World!";
+    private final UserService userService;
+
+
+    @PostMapping
+    public UserInfoResponse createUser(@RequestBody UserInfoRequest request) {
+        return userService.createUser(request);
     }
 
-    @GetMapping("/someRequest")
-    public String something(){
-        return "Another request";
+    @GetMapping("/{id}")
+    public UserInfoResponse getUser(@PathVariable Long id) {
+        return userService.getUser(id);
     }
 
-    @GetMapping
-    public List<String> getUsers(){
-        return List.of("ANDREW", "ANNA");
+    @PutMapping("/{id}")
+    public UserInfoResponse updateUser(@PathVariable Long id, @RequestBody UserInfoRequest request) {
+        return userService.updateUser(id, request);
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+    }
+
+
+    @GetMapping("/all")
+    public List<UserInfoResponse> getAllUsers () {
+        return userService.getAllUsers();
+    }
+
 }
