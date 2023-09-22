@@ -42,6 +42,8 @@ public class UserServiceImpl implements UserService {
         for (UserInfoResponse user : users) {
             if (Objects.equals(id, user.getId())){
                 userInfoResponse = user;
+            } else {
+                log.error("User not found");
             }
         }
         return userInfoResponse;

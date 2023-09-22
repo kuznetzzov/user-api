@@ -44,6 +44,8 @@ public class CarServiceImpl implements CarService {
         for (CarInfoResponse car : cars) {
             if (Objects.equals(id, car.getId())){
                 carInfoResponse = car;
+            } else {
+                log.error("Car not found");
             }
         }
         return carInfoResponse;
