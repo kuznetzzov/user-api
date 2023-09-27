@@ -1,5 +1,6 @@
 package com.flybuilder.userapi.model.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.flybuilder.userapi.model.enums.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -32,4 +33,8 @@ public class Car {
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
     CarStatus status;
+
+    @ManyToOne
+    @JsonBackReference(value = "driver_cars")
+    User user;
 }

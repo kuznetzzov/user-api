@@ -4,6 +4,8 @@ import com.flybuilder.userapi.model.dto.request.CarInfoRequest;
 import com.flybuilder.userapi.model.dto.response.CarInfoResponse;
 import com.flybuilder.userapi.service.CarService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,8 +40,12 @@ public class CarController {
 
 
     @GetMapping("/all")
-    public List<CarInfoResponse> getAllCars () {
-        return carService.getAllCars();
+    public Page<CarInfoResponse> getAllCars (@RequestParam(defaultValue = "1") Integer page,
+                                             @RequestParam(defaultValue = "10") Integer perPage,
+                                             @RequestParam(defaultValue = "brand") String sort,
+                                             @RequestParam(defaultValue = "ASC") Sort.Direction order,
+                                             @RequestParam(required = false) String filter) {
+        return carService.getAllCars(page, perPage, sort, order, filter);
     }
 
 
