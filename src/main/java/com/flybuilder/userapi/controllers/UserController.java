@@ -1,9 +1,12 @@
 package com.flybuilder.userapi.controllers;
 
 import com.flybuilder.userapi.model.dto.request.UserInfoRequest;
+import com.flybuilder.userapi.model.dto.response.CarInfoResponse;
 import com.flybuilder.userapi.model.dto.response.UserInfoResponse;
 import com.flybuilder.userapi.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +26,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public UserInfoResponse getUser(@PathVariable Long id) {
-        return userService.getUser(id);
+        return userService.getUserDto(id);
     }
 
     @PutMapping("/{id}")
@@ -31,15 +34,18 @@ public class UserController {
         return userService.updateUser(id, request);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    @GetMapping("/all")
+    public Page<UserInfoResponse> getAllUsers (@RequestParam(defaultValue = "1") Integer page,
+                                               @RequestParam(defaultValue = "10") Integer perPage,
+                                               @RequestParam(defaultValue = "age") String sort,
+                                               @RequestParam(defaultValue = "ASC") Sort.Direction order,
+                                               @RequestParam(required = false) String filter) {
+        return userService.getAllUsers(page, perPage, sort, order, filter);
     }
 
-
-    @GetMapping("/all")
-    public List<UserInfoResponse> getAllUsers () {
-        return userService.getAllUsers();
+    @GetMapping("/{id}/allCars")
+    public List<CarInfoResponse> getCarsByUser (@PathVariable Long id) {
+        return userService.getCarsByUser(id);
     }
 
 }

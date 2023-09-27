@@ -4,22 +4,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flybuilder.userapi.model.db.entity.Car;
 import com.flybuilder.userapi.model.db.entity.User;
 import com.flybuilder.userapi.model.db.repository.CarRepo;
-import com.flybuilder.userapi.model.db.repository.UserRepo;
 import com.flybuilder.userapi.model.dto.request.CarInfoRequest;
 import com.flybuilder.userapi.model.dto.response.CarInfoResponse;
 import com.flybuilder.userapi.model.dto.response.UserInfoResponse;
 import com.flybuilder.userapi.model.enums.CarStatus;
-import com.flybuilder.userapi.model.enums.UserStatus;
 import com.flybuilder.userapi.service.CarService;
 import com.flybuilder.userapi.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.flybuilder.userapi.utils.PaginationUtil.getPageRequest;
 
 @Slf4j
 @Service
@@ -78,6 +82,11 @@ public class CarServiceImpl implements CarService {
         }
     }
 
+    private Car getCarById(Long id) {
+        return carRepo.findById(id)
+                .orElse(new Car());
+    }
+
     @Override
     public List<CarInfoResponse> getAllCars() {
         return carRepo.findAll().stream()
@@ -88,9 +97,39 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public CarInfoResponse linkCarAndDriver(Long userId, Long carId) {
-        CarInfoResponse car = getCar(carId);
-        UserInfoResponse user = userService.getUser(userId);
+        Car car = getCarById(carId);
+        User user = userService.getUser(userId);
+
+        user.getCars().add(car);
+        userService.updateCarList(user);
+
         car.setUser(user);
-        return car;
+        car = carRepo.save(car);
+
+        CarInfoResponse carInfoResponse = mapper.convertValue(car, CarInfoResponse.class);
+        UserInfoResponse userInfoResponse = mapper.convertValue(user, UserInfoResponse.class);
+
+        carInfoResponse.setUser(userInfoResponse);
+        return carInfoResponse;
+    }
+
+    @Override
+    public Page<CarInfoResponse> getAllCars(Integer page, Integer perPage, String sort, Sort.Direction order, String filter) {
+        Pageable request = getPageRequest(page, perPage, sort, order);
+
+        List<Car> pageList;
+
+        if (StringUtils.isBlank(filter)) {
+            pageList = carRepo.findAllNotDeleted(request);
+        } else {
+            pageList = carRepo.findAllNotDeleted(request, filter);
+        }
+
+        List<CarInfoResponse> response = pageList.stream()
+                .map(c -> mapper.convertValue(c, CarInfoResponse.class))
+                .collect(Collectors.toList());
+
+
+        return new PageImpl<>(response);
     }
 }

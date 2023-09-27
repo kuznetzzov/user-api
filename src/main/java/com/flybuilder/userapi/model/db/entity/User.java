@@ -1,5 +1,6 @@
 package com.flybuilder.userapi.model.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.flybuilder.userapi.model.enums.Gender;
 import com.flybuilder.userapi.model.enums.UserStatus;
 import lombok.AccessLevel;
@@ -9,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -43,5 +45,9 @@ public class User {
     LocalDateTime updatedAt;
 
     UserStatus status;
+
+    @OneToMany
+    @JsonManagedReference(value = "driver_cars")
+    List<Car> cars;
 
 }
