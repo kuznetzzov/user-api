@@ -1,6 +1,7 @@
 package com.flybuilder.userapi.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flybuilder.userapi.exceptions.CustomException;
 import com.flybuilder.userapi.model.db.entity.User;
 import com.flybuilder.userapi.model.db.repository.UserRepo;
 import com.flybuilder.userapi.model.dto.request.UserInfoRequest;
@@ -11,10 +12,12 @@ import com.flybuilder.userapi.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -30,9 +33,20 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepo userRepo;
     private final ObjectMapper mapper;
+    private final static String errorStr = "User with id %d not found";
+    private final static String errorEmail = "Invalid email";
 
     @Override
     public UserInfoResponse createUser(UserInfoRequest request) {
+
+        String email = request.getEmail();
+        if (!EmailValidator.getInstance().isValid(email)) {
+            throw new CustomException("Invalid email", HttpStatus.BAD_REQUEST);
+        }
+
+        userRepo.findByEmail(email).ifPresent(u -> {
+            throw new CustomException("User already exists", HttpStatus.BAD_REQUEST);
+        });
 
         User user = mapper.convertValue(request, User.class);
         user.setCreatedAt(LocalDateTime.now());
@@ -45,18 +59,39 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserInfoResponse getUserDto(Long id) {
-        User user = getUser(id);
-        return mapper.convertValue(user, UserInfoResponse.class);
+        UserInfoResponse userInfoResponse = new UserInfoResponse();
+        if (id != 0) {
+            User user = getUser(id);
+            userInfoResponse = mapper.convertValue(user, UserInfoResponse.class);
+        } else {
+            log.error(errorStr, id);
+        }
+        return userInfoResponse;
     }
 
     @Override
     public User getUser(Long id) {
-        return userRepo.findById(id).orElse(new User());
+        final String errMsg = String.format("User with id %d not found", id);
+        return userRepo.findById(id)
+                .orElseThrow(() -> {
+                    throw new CustomException(errMsg, HttpStatus.NOT_FOUND);
+                });
     }
 
 
     @Override
     public UserInfoResponse updateUser(Long id, UserInfoRequest request) {
+
+        if (id == 0) {
+            log.error(errorStr, id);
+        }
+
+        UserInfoResponse userInfoResponse = new UserInfoResponse();
+
+        if (!EmailValidator.getInstance().isValid(request.getEmail())) {
+            log.error(errorEmail, id);
+        }
+
         User user = userRepo.findById(id).orElse(null);
         if (user == null) {
             return null;
@@ -79,6 +114,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long id) {
+        if (id == 0) {
+            log.error(errorStr, id);
+        }
+
         User user = userRepo.findById(id).orElse(null);
 
         if (user != null) {
@@ -98,11 +137,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateCarList(User user) {
+
         return userRepo.save(user);
     }
 
     @Override
     public List<CarInfoResponse> getCarsByUser(Long id) {
+        if (id == 0) {
+            log.error(errorStr, id);
+        }
         User user = getUser(id);
         return user.getCars().stream()
                 .map(c -> mapper.convertValue(c, CarInfoResponse.class))
@@ -110,6 +153,12 @@ public class UserServiceImpl implements UserService {
     }
 
     public User find(String firstName) {
+        if (StringUtils.isBlank(firstName)) {
+            log.error("Invalid firstName", firstName);
+        }
+        if (userRepo.findFirstName(firstName) == null) {
+            log.error("Not found firstName %d",  firstName);
+        }
         return userRepo.findFirstName(firstName);
     }
 
