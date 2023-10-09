@@ -1,6 +1,10 @@
 package com.flybuilder.userapi.model.db.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.flybuilder.userapi.model.enums.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -29,8 +33,12 @@ public class Car {
     @Column(name = "is_new")
     Boolean isNew;
     @Column(name = "created_at")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     LocalDateTime createdAt;
     @Column(name = "updated_at")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     LocalDateTime updatedAt;
     CarStatus status;
 

@@ -1,6 +1,7 @@
 package com.flybuilder.userapi.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.flybuilder.userapi.exceptions.CustomException;
 import com.flybuilder.userapi.model.db.entity.Car;
 import com.flybuilder.userapi.model.db.entity.User;
 import com.flybuilder.userapi.model.db.repository.CarRepo;
@@ -13,7 +14,6 @@ import com.flybuilder.userapi.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -55,7 +55,7 @@ public class CarServiceImpl implements CarService {
             Car car = carRepo.findById(id).orElse(new Car());
             carInfoResponse = mapper.convertValue(car, CarInfoResponse.class);
         } else {
-            log.error(errorStr, id);
+            throw new CustomException(errorStr, HttpStatus.NOT_FOUND);
         }
         return carInfoResponse;
     }
@@ -64,7 +64,7 @@ public class CarServiceImpl implements CarService {
     public CarInfoResponse updateCar(Long id, CarInfoRequest request) {
 
         if (id == 0) {
-            log.error(errorStr, id);
+            throw new CustomException(errorStr, HttpStatus.NOT_FOUND);
         }
 
         Car car = carRepo.findById(id).orElse(null);
@@ -89,9 +89,6 @@ public class CarServiceImpl implements CarService {
 
     @Override
     public void deleteCar(Long id) {
-        if (id == 0) {
-            log.error(errorStr, id);
-        }
 
         Car car = carRepo.findById(id).orElse(null);
 
@@ -102,9 +99,9 @@ public class CarServiceImpl implements CarService {
         }
     }
 
-    private Car getCarById(Long id) {
+    public Car getCarById(Long id) {
         if (id == 0) {
-            log.error(errorStr, id);
+            throw new CustomException(errorStr, HttpStatus.NOT_FOUND);
         }
         return carRepo.findById(id)
                 .orElse(new Car());
@@ -121,10 +118,10 @@ public class CarServiceImpl implements CarService {
     @Override
     public CarInfoResponse linkCarAndDriver(Long userId, Long carId) {
         if (userId == 0) {
-            log.error("User with id %d not found", userId);
+            throw new CustomException("User with id %d not found", HttpStatus.NOT_FOUND);
         }
         if (carId == 0) {
-            log.error(errorStr, carId);
+            throw new CustomException(errorStr, HttpStatus.NOT_FOUND);
         }
 
         Car car = getCarById(carId);

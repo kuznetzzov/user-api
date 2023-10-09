@@ -1,5 +1,6 @@
 package com.flybuilder.userapi.model.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.flybuilder.userapi.model.dto.request.UserInfoRequest;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -11,6 +12,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserInfoResponse extends UserInfoRequest {
 
     Long id;

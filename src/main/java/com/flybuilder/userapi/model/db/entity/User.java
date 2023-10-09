@@ -1,6 +1,11 @@
 package com.flybuilder.userapi.model.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.flybuilder.userapi.model.enums.Gender;
 import com.flybuilder.userapi.model.enums.UserStatus;
 import lombok.AccessLevel;
@@ -39,9 +44,13 @@ public class User {
     Gender gender;
 
     @Column(name = "created_at")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     LocalDateTime createdAt;
 
     @Column(name = "updated_at")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     LocalDateTime updatedAt;
 
     UserStatus status;
