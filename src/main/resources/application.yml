@@ -17,3 +17,12 @@ spring:
         jdbc:
           lob:
             non_contextual_creation: true
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 180000
+        loggerLevel: basic
+app:
+  base-url: itmo.ru

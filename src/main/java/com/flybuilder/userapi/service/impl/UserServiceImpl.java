@@ -41,7 +41,7 @@ public class UserServiceImpl implements UserService {
 
         String email = request.getEmail();
         if (!EmailValidator.getInstance().isValid(email)) {
-            throw new CustomException("Invalid email", HttpStatus.BAD_REQUEST);
+            throw new CustomException(errorEmail, HttpStatus.BAD_REQUEST);
         }
 
         userRepo.findByEmail(email).ifPresent(u -> {
@@ -59,19 +59,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserInfoResponse getUserDto(Long id) {
-        UserInfoResponse userInfoResponse = new UserInfoResponse();
+        UserInfoResponse userInfoResponse;
         if (id != 0) {
             User user = getUser(id);
             userInfoResponse = mapper.convertValue(user, UserInfoResponse.class);
         } else {
-            log.error(errorStr, id);
+            throw new CustomException(errorStr, HttpStatus.NOT_FOUND);
         }
         return userInfoResponse;
     }
 
     @Override
     public User getUser(Long id) {
-        final String errMsg = String.format("User with id %d not found", id);
+        final String errMsg = String.format(errorStr, id);
         return userRepo.findById(id)
                 .orElseThrow(() -> {
                     throw new CustomException(errMsg, HttpStatus.NOT_FOUND);
@@ -82,11 +82,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserInfoResponse updateUser(Long id, UserInfoRequest request) {
 
-        if (id == 0) {
-            log.error(errorStr, id);
-        }
-
-        UserInfoResponse userInfoResponse = new UserInfoResponse();
+        UserInfoResponse userInfoResponse;
 
         if (!EmailValidator.getInstance().isValid(request.getEmail())) {
             log.error(errorEmail, id);
@@ -112,11 +108,9 @@ public class UserServiceImpl implements UserService {
         return mapper.convertValue(save, UserInfoResponse.class);
     }
 
+
     @Override
     public void deleteUser(Long id) {
-        if (id == 0) {
-            log.error(errorStr, id);
-        }
 
         User user = userRepo.findById(id).orElse(null);
 
@@ -137,15 +131,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateCarList(User user) {
-
         return userRepo.save(user);
     }
 
     @Override
     public List<CarInfoResponse> getCarsByUser(Long id) {
-        if (id == 0) {
-            log.error(errorStr, id);
-        }
+
         User user = getUser(id);
         return user.getCars().stream()
                 .map(c -> mapper.convertValue(c, CarInfoResponse.class))
@@ -155,9 +146,6 @@ public class UserServiceImpl implements UserService {
     public User find(String firstName) {
         if (StringUtils.isBlank(firstName)) {
             log.error("Invalid firstName", firstName);
-        }
-        if (userRepo.findFirstName(firstName) == null) {
-            log.error("Not found firstName %d",  firstName);
         }
         return userRepo.findFirstName(firstName);
     }
